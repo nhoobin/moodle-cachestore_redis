@@ -86,7 +86,7 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
      * @return bool
      */
     public static function is_supported_mode($mode) {
-        return ($mode === self::MODE_APPLICATION);
+        return ($mode === self::MODE_APPLICATION || $mode === self::MODE_SESSION);
     }
 
     /**
@@ -106,7 +106,7 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
      * @return int
      */
     public static function get_supported_modes(array $configuration = array()) {
-        return self::MODE_APPLICATION;
+        return self::MODE_APPLICATION + self::MODE_SESSION;
     }
 
     /**
@@ -127,7 +127,8 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
             return;
         }
         $prefix = !empty($configuration['prefix']) ? $configuration['prefix'] : '';
-        $this->redis = $this->new_redis($configuration['server'], $prefix);
+        $database = !empty($configuration['database']) ? $configuration['database'] : 0;
+        $this->redis = $this->new_redis($configuration['server'], $prefix, $database);
     }
 
     /**
@@ -138,13 +139,21 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
      * @param string $prefix The key prefix
      * @return Redis
      */
-    protected function new_redis($server, $prefix = '') {
+    protected function new_redis($server, $prefix = '', $database) {
         $redis = new Redis();
         if ($redis->connect($server)) {
             $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
             $redis->setOption(Redis::OPT_PREFIX, $prefix.$this->name.'-');
 
+            $sdb = $redis->select($database);
+
             $this->isready = $this->ping($redis);
+
+            // If selecting the database returns false, disable the store.
+            if ($sdb == false) {
+                $this->isready = false;
+            }
+
         } else {
             $this->isready = false;
         }
@@ -413,7 +422,11 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
      * @return array
      */
     public static function config_get_configuration_array($data) {
-        return array('server' => $data->server, 'prefix' => $data->prefix);
+        return array(
+            'server' => $data->server,
+            'prefix' => $data->prefix,
+            'database' => $data->database
+        );
     }
 
     /**
@@ -427,6 +440,7 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
         $data = array();
         $data['server'] = $config['server'];
         $data['prefix'] = !empty($config['prefix']) ? $config['prefix'] : '';
+        $data['database'] = !empty($config['database']) ? $config['database'] : 0;
         $editform->set_data($data);
     }
 

@@ -37,3 +37,6 @@ $string['prefix_help'] = 'This prefix is used for all key names on the Redis ser
 * If you only have one Moodle instance using this server, you can leave this value default.
 * Due to key length restrictions, a maximum of 5 characters is permitted.';
 $string['prefixinvalid'] = 'Invalid prefix. You can only use a-z A-Z 0-9-_.';
+
+$string['database'] = 'Database';
+$string['database_help'] = 'The redis database to use. For a default Redis installation this is from 0-15.';

@@ -48,5 +48,9 @@ class cachestore_redis_addinstance_form extends cachestore_addinstance_form {
         $form->setType('prefix', PARAM_TEXT); // We set to text but we have a rule to limit to alphanumext.
         $form->addHelpButton('prefix', 'prefix', 'cachestore_redis');
         $form->addRule('prefix', get_string('prefixinvalid', 'cachestore_redis'), 'regex', '#^[a-zA-Z0-9\-_]+$#');
+
+        $form->addElement('text', 'database', get_string('database', 'cachestore_redis'));
+        $form->setType('database', PARAM_INT);
+        $form->addHelpButton('database', 'database', 'cachestore_redis');
     }
 }
