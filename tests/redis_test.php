@@ -41,7 +41,7 @@ class cachestore_redis_test extends cachestore_tests {
     protected $store;
 
     /**
-     * Returns the MongoDB class name
+     * Returns the cachestore redis class name
      *
      * @return string
      */
@@ -58,6 +58,8 @@ class cachestore_redis_test extends cachestore_tests {
     }
 
     /**
+     * Creates the cachestore for testing
+     *
      * @return cachestore_redis
      */
     protected function create_cachestore_redis() {

@@ -34,7 +34,8 @@ defined('MOODLE_INTERNAL') || die();
  *       to see if the hash is set to expire, if not, set a TTL on it.  Must prevent it from
  *       doing it on every set though.
  */
-class cachestore_redis extends cache_store implements cache_is_key_aware, cache_is_lockable, cache_is_searchable, cache_is_configurable {
+class cachestore_redis extends cache_store implements cache_is_key_aware, cache_is_lockable, cache_is_searchable,
+    cache_is_configurable {
     /**
      * Name of this store.
      *
@@ -96,8 +97,7 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
      * @return int
      */
     public static function get_supported_features(array $configuration = array()) {
-        return self::SUPPORTS_DATA_GUARANTEE +
-               self::IS_SEARCHABLE;
+        return self::SUPPORTS_DATA_GUARANTEE + self::IS_SEARCHABLE;
     }
 
     /**
@@ -138,6 +138,7 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
      *
      * @param string $server The server connection string
      * @param string $prefix The key prefix
+     * @param int $database The database to use
      * @return Redis
      */
     protected function new_redis($server, $prefix = '', $database) {
@@ -464,6 +465,11 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
         $editform->set_data($data);
     }
 
+    /**
+     * Creates a test instance for unit tests if possible.
+     * @param cache_definition $definition
+     * @return bool|cachestore_memcached
+     */
     public static function initialise_unit_test_instance(cache_definition $definition) {
         if (!self::are_requirements_met()) {
             return false;
@@ -481,6 +487,14 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
         return $store;
     }
 
+    /**
+     * Returns true if this cache store instance is both suitable for testing, and ready for testing.
+     *
+     * Cache stores that support being used as the default store for unit and acceptance testing should
+     * override this function and return true if there requirements have been met.
+     *
+     * @return bool
+     */
     public static function ready_to_be_used_for_testing() {
         return defined('CACHESTORE_REDIS_TEST_SERVER');
     }
