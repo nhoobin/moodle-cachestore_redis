@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  *       to see if the hash is set to expire, if not, set a TTL on it.  Must prevent it from
  *       doing it on every set though.
  */
-class cachestore_redis extends cache_store implements cache_is_key_aware, cache_is_lockable, cache_is_configurable {
+class cachestore_redis extends cache_store implements cache_is_key_aware, cache_is_lockable, cache_is_searchable, cache_is_configurable {
     /**
      * Name of this store.
      *
@@ -96,7 +96,8 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
      * @return int
      */
     public static function get_supported_features(array $configuration = array()) {
-        return self::SUPPORTS_DATA_GUARANTEE;
+        return self::SUPPORTS_DATA_GUARANTEE +
+               self::IS_SEARCHABLE;
     }
 
     /**
@@ -333,6 +334,25 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
      */
     public function has($key) {
         return $this->redis->hExists($this->hash, $key);
+    }
+
+    /**
+     * Finds all of the keys being stored in the cache store instance.
+     *
+     * @return array
+     */
+    public function find_all() {
+        return $this->redis->keys('*');
+    }
+
+    /**
+     * Finds all of the keys whose keys start with the given prefix.
+     *
+     * @param string $prefix
+     * @return array An array of keys.
+     */
+    public function find_by_prefix($prefix) {
+        return $this->redis->keys($prefix + '*');
     }
 
     /**
